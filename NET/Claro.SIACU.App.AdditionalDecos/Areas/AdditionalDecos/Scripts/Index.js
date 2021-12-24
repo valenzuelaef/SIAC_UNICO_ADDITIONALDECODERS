@@ -157,7 +157,6 @@
                 that.AdditionalDecos.Data.planCode = CoreServices.planCode;
                 that.AdditionalDecos.Data.AdditionalServices = (AdditionalServices.CodeResponse == '0') ? AdditionalServices.AdditionalServiceList || [] : [];
                 that.AdditionalDecos.Data.AdditionalEquipment = (AdditionalServices.CodeResponse == '0') ? AdditionalServices.AdditionalEquipmentList || [] : [];
-                debugger;
                 that.AdditionalDecos.Data.CoreServices = (CoreServices.CodeResponse == '0') ? CoreServices.ServiceList || [] : [];
                 that.AdditionalDecos.Data.CustomerInformation = (CustomerInformation.CodeResponse == '0') ? CustomerInformation.CustomerList[0] : [];
                 that.AdditionalDecos.Data.ListIgv = (Igv.CodeResponse == '0') ? Igv.listaIGV : [];
@@ -173,6 +172,15 @@
                 that.AdditionalDecos.Data.SubTypeWork = [];
                 that.AdditionalDecos.Data.LstTyping = (lstTyping.CodigoRespuesta == '0') ? lstTyping.listaTipificacionRegla : [];
                 that.AdditionalDecos.Data.VisitaTecnica = {};
+				
+				
+				if(that.AdditionalDecos.Data.AdditionalEquipment != [] ){
+					
+					that.AdditionalDecos.Data.AdditionalEquipment =  that.AdditionalDecos.Data.AdditionalEquipment.sort(function (a, b) {
+																	var x = a.ServiceDescription.toLowerCase(), 
+																		y = b.ServiceDescription.toLowerCase(); 
+																	return x < y ? -1 : x > y ? 1 : 0; });				
+				}
 
                 that.AdditionalDecos.Data.ValidarTransaccion = (ValidarTransaccion.ResponseAudit.CodigoRespuesta == '0') ? ValidarTransaccion.ResponseData : [];
 
@@ -507,14 +515,28 @@
             var lstEquipmentFilter = [];
             var intID = 1;
             /*Decos adicionales*/
-            /**/
+            /*
+            var lstEquipmentGlobal = data.filter(function (item) {
+                return item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO' 
+            });
+            */
+            /* if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT === 'TOBE') {
+                 var lstEquipmentGlobal = data.filter(function (item) {
+                     //return item.coreAdicional == 'ADICIONAL' && item.ServiceEquiptment == 'SERVICIO' && item.descEquipo.toUpperCase().indexOf('DECO') > -1
+                     return item.ServiceType == 'ALQUILER EQUIPOS IPTV'
+                 });
+             } else {
+                 var lstEquipmentGlobal = data.filter(function (item) {
+                     return item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO'
+                 });
+             }*/
             var lstEquipmentGlobal = data.filter(function (item) {
                 return (item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO') || item.ServiceType == 'ALQUILER EQUIPOS IPTV' || item.ServiceType == 'ALQUILER EQUIPOS'
             });
             that.AdditionalDecos.oRequest.arrEquipment = lstEquipmentGlobal;
             debugger;
             /*Para obtener spcode*/
-            var lstEquipmentAdd = data.filter(function (Item) { return (Item.coreAdicional == 'ADICIONAL' && Item.ServiceEquiptment == 'EQUIPO') || (Item.ServiceDescription.indexOf('Punto Adicional') > -1); });
+            var lstEquipmentAdd = data.filter(function (Item) { return Item.coreAdicional == 'ADICIONAL' && Item.ServiceEquiptment == 'EQUIPO'; });
             that.AdditionalDecos.oRequest.arrEquipmentAdd = lstEquipmentAdd;
 
             var intMaxEquipmentPlan = lstEquipmentGlobal.length;
@@ -530,15 +552,10 @@
             controls.spanMaxDecos.text(intMaxEquipment);
             that.AdditionalDecos.oRequest.TotMax = (intMaxEquipment * 1);
 
-            /*lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
+            lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
                 if (a.ServiceDescription > b.ServiceDescription) { return 1; }
                 if (a.ServiceDescription < b.ServiceDescription) { return -1; }
                 return 0;
-            });*/
-            lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
-                var x = a.ServiceDescription.toLowerCase(),
-                y = b.ServiceDescription.toLowerCase();
-                return x < y ? -1 : x > y ? 1 : 0;
             });
 
             var lstEquipment = lstEquipmentGlobal.map(function (item) {
@@ -790,12 +807,6 @@
                     if (a.ServiceDescription < b.ServiceDescription) { return -1; }
                     return 0;
                 });
-              /*   arrEquipmentRemoveSelect = arrEquipmentRemoveSelect.sort(function (a, b) {
-                    var x = a.ServiceDescription.toLowerCase(),
-                    y = b.ServiceDescription.toLowerCase();
-                    return x < y ? -1 : x > y ? 1 : 0;
-                });*/
-
 
                 oEquipmentAdd = arrEquipmentRemoveSelect[0];
                 //oEquipmentAdd.Price = oEquipmentSelect.FixedCharge;
@@ -811,7 +822,6 @@
                 that.AdditionalDecos.oRequest.arrRemoveEquipment = that.AdditionalDecos.oRequest.arrRemoveEquipment.filter(function (x) { return x.LineID != oEquipmentAdd.LineID; });
 
             } else {
-                debugger;
                 $.each(arrEquipmentClient, function (Index, Item) {
                     arrEquipmentPlan = arrEquipmentPlan.filter(function (x) { return x.LineID != Item.idServPvu; });
                 });
@@ -825,12 +835,7 @@
                     if (a.ServiceDescription < b.ServiceDescription) { return -1; }
                     return 0;
                 });
-              
-                /*  arrEquipmentPlan = arrEquipmentPlan.sort(function (a, b) {
-                    var x = a.ServiceDescription.toLowerCase(),
-                    y = b.ServiceDescription.toLowerCase();
-                    return x < y ? -1 : x > y ? 1 : 0;
-                });  */
+                debugger;
 
                 if (arrEquipmentPlan[0] == null) {
                     alert(string.format('No tiene {0} disponibles', oEquipmentSelect.tipoEquipo.replace('_', ' ')));
@@ -929,12 +934,6 @@
                         if (a.ServiceDescription > b.ServiceDescription) { return -1; }
                         return 0;
                     });
-                    
-                    /* arrEquipment = arrEquipment.sort(function (a, b) {
-                        var x = a.ServiceDescription.toLowerCase(),
-                        y = b.ServiceDescription.toLowerCase();
-                        return x < y ? -1 : x > y ? 1 : 0;
-                    });*/
                     debugger;
                     var FixedChargeEquipment = that.AdditionalDecos.oRequest.arrAddEquipment.filter(function (x) { return x.idServicio == strID; }).Price;
 
@@ -968,15 +967,10 @@
                 } else {
                     arrEquipment = that.AdditionalDecos.oRequest.arrAddEquipment.filter(function (x) { return x.Type == oGroupSelect.tipoEquipo; });
                     //arrEquipment2 = that.AdditionalDecos.oRequest.arrEquipmentGroup2.filter(function (x) { return x.Type == oGroupSelect.tipoEquipo; });
-                    /*arrEquipment = arrEquipment.sort(function (a, b) {
+                    arrEquipment = arrEquipment.sort(function (a, b) {
                         if (a.ServiceDescription < b.ServiceDescription) { return 1; }
                         if (a.ServiceDescription > b.ServiceDescription) { return -1; }
                         return 0;
-                    });*/
-                    arrEquipment = arrEquipment.sort(function (a, b) {
-                        var x = a.ServiceDescription.toLowerCase(),
-                        y = b.ServiceDescription.toLowerCase();
-                        return x < y ? -1 : x > y ? 1 : 0;
                     });
 
                     //decRegularAmount -= (oGroupSelect.FixedCharge * 1);
@@ -3108,7 +3102,7 @@
                 }
             }
 
-
+            debugger;
             if (!$.array.isEmptyOrNull(that.AdditionalDecos.Data.ValidarTransaccion)) {
                 if (that.AdditionalDecos.Data.ValidarTransaccion.Codigo == "-3") {
                     alert(that.AdditionalDecos.Data.ValidarTransaccion.Mensaje, 'Alerta', function () {
