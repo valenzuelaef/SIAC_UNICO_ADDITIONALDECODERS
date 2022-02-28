@@ -145,11 +145,13 @@
                     Instalacion = AdditionalFixedData.servicios.datosinstalacioncliente_obtenerDatosInstalacion || {},
                     Ubigeos = AdditionalFixedData.servicios.ubicaciones_obtenerUbicaciones || {},
                     fixPlanesCoreService = AdditionalFixedData.servicios.PlanFijaServicioCampana || {},
-                    lstTyping = AdditionalFixedData.servicios.tipificacionreglas_obtenerInformacionTipificacion || {},
+                    lstTyping = AdditionalFixedData.servicios.tipificacionreglas_obtenerInformacionTipificacion || {};
+                debugger;
+                var ValidarTransaccion = {};
+                if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT == 'TOBE')
+                    ValidarTransaccion = AdditionalFixedData.servicios.consultatransaccionfija_validarTransaccion || {};
 
-                    ValidarTransaccion = AdditionalFixedData.servicios.consultatransaccionfija_validarTransaccion || {},
-
-                    AuditRequest = AuditRequest || {};
+                var AuditRequest = AuditRequest || {};
 
                 that.AdditionalDecos.Data = {};
                 that.AdditionalDecos.Data.idTransactionFront = idTransactionFront;
@@ -172,17 +174,18 @@
                 that.AdditionalDecos.Data.SubTypeWork = [];
                 that.AdditionalDecos.Data.LstTyping = (lstTyping.CodigoRespuesta == '0') ? lstTyping.listaTipificacionRegla : [];
                 that.AdditionalDecos.Data.VisitaTecnica = {};
-				
-				
-				if(that.AdditionalDecos.Data.AdditionalEquipment != [] ){
-					
-					that.AdditionalDecos.Data.AdditionalEquipment =  that.AdditionalDecos.Data.AdditionalEquipment.sort(function (a, b) {
-																	var x = a.ServiceDescription.toLowerCase(), 
-																		y = b.ServiceDescription.toLowerCase(); 
-																	return x < y ? -1 : x > y ? 1 : 0; });				
-				}
 
-                that.AdditionalDecos.Data.ValidarTransaccion = (ValidarTransaccion.ResponseAudit.CodigoRespuesta == '0') ? ValidarTransaccion.ResponseData : [];
+
+                if (that.AdditionalDecos.Data.AdditionalEquipment != []) {
+
+                    that.AdditionalDecos.Data.AdditionalEquipment = that.AdditionalDecos.Data.AdditionalEquipment.sort(function (a, b) {
+                        var x = a.ServiceDescription.toLowerCase(),
+                            y = b.ServiceDescription.toLowerCase();
+                        return x < y ? -1 : x > y ? 1 : 0;
+                    });
+                }
+                if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT == 'TOBE')
+                    that.AdditionalDecos.Data.ValidarTransaccion = (ValidarTransaccion.ResponseAudit.CodigoRespuesta == '0') ? ValidarTransaccion.ResponseData : [];
 
                 that.AdditionalDecos.Configuration = {};
                 that.AdditionalDecos.Configuration.Constants = {};
@@ -227,7 +230,8 @@
                 if (!that.InitialValidation()) {
                     return false;
                 }
-
+                console.log('planCode -> ' + CoreServices.planCode);
+                console.log('coIdPub  -> ' + Session.SessionParams.DATACUSTOMER.coIdPub);
                 if (!$.array.isEmptyOrNull(that.AdditionalDecos.Data.CoreServices)) {
                     var CoreServicesCable = CoreServices.ServiceList.filter(function (el, idx) { return el.ServiceName == 'Cable' });
                     if (CoreServicesCable.length == 0) {
@@ -254,7 +258,7 @@
                         return {
                             cantidad: item.cantidad,
                             capacidad: item.capacidad,
-                            cargoFijoPromocion: $.string.isEmptyOrNull(item.cargoFijoPromocion) ? item.cargoFijoPromocion = '0' : (parseFloat(item.cargoFijoPromocion) * parseFloat('1.' + that.AdditionalDecos.Data.Configuration.Constantes_Igv)).toFixed(2),//FixedCharge,
+                            cargoFijoPromocion: $.string.isEmptyOrNull(item.cargoFijoPromocion) ? item.cargoFijoPromocion = '0.00' : (parseFloat(item.cargoFijoPromocion) * parseFloat('1.' + that.AdditionalDecos.Data.Configuration.Constantes_Igv)).toFixed(2),//FixedCharge,
                             CodeGroup: item.CodeGroup,
                             codigoExterno: item.codigoExterno,
                             codigoTipEqu: item.codigoTipEqu,
@@ -320,7 +324,7 @@
                     $.reusableBusiness.LoadPointOfAttention(controls.cboPointAttention, that.AdditionalDecos);
                     that.loadClientEquipment();
                     /***INI-Nuevas configuraciones***/
-                    that.AdditionalDecos.Data.Configuration.Plataforma_Facturador = idTransactionFront == '2' ? 'BSCS7' : 'CBIO';
+                    that.AdditionalDecos.Configuration.Constants.Plataforma_Facturador = idTransactionFront == '2' ? 'BSCS7' : 'CBIO';
                     /***FIN-Nuevas configuraciones***/
                 });
 
@@ -411,24 +415,26 @@
             that.AdditionalDecos.oRequest.decLoyaltyAmount = '0,00';
 
             //Tipo de trabajo
-            if (that.AdditionalDecos.oRequest.strTechnology == "9") {
-                that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = '1091'; // tipo de trabajo alta
-                that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = '0000'; // tipo de trabajo baja--?
-                that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = '1092'; // tipo de trabajo baja
-            }
+            debugger;
+            if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT == 'TOBE') {
+                if (that.AdditionalDecos.oRequest.strTechnology == "9") {
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = '1091'; // tipo de trabajo alta
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = '0000'; // tipo de trabajo baja--?
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = '1092'; // tipo de trabajo baja
+                }
 
-            if (that.AdditionalDecos.oRequest.strTechnology == "5") {
-                that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = '1100'; // tipo de trabajo alta--1067
-                that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = '0000'; // tipo de trabajo baja--?
-                that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = '1099'; // tipo de trabajo baja--1068
+                if (that.AdditionalDecos.oRequest.strTechnology == "5") {
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = '1100'; // tipo de trabajo alta--1067
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = '0000'; // tipo de trabajo baja--?
+                    that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = '1099'; // tipo de trabajo baja--1068
 
+                }
             }
-            /*Descomentar*/
-            /*			
-            that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = that.getSetting(data, 'TipTrabID_Alta'); // tipo de trabajo alta
-            that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = that.getSetting(data, 'TipTrabID_Baja'); // tipo de trabajo baja
-            that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = that.getSetting(data, 'TipTrabID_Mixto'); // tipo de trabajo ambos
-			*/
+            else {
+                that.AdditionalDecos.Configuration.Constants.TypeWorkAdd = that.getSetting(data, 'TipTrabID_Alta'); // tipo de trabajo alta
+                that.AdditionalDecos.Configuration.Constants.TypeWorkRemove = that.getSetting(data, 'TipTrabID_Baja'); // tipo de trabajo baja
+                that.AdditionalDecos.Configuration.Constants.TypeWorkBoth = that.getSetting(data, 'TipTrabID_Mixto'); // tipo de trabajo ambos
+            }
             //Cliente
             that.AdditionalDecos.Configuration.Constants.KeyCustomerInteract = that.getSetting(data, 'KeyCustomerInteract');
             that.AdditionalDecos.Configuration.Constants.Modalidad = that.getSetting(data, 'Modalidad');
@@ -505,208 +511,6 @@
             that.AdditionalDecos.Configuration.Constants.MaxEquipmentIP = that.getSetting(data, 'MaxEquipmentIP'); //3
 
         },
-        /*Carga Decos del cliente Actual*/
-        loadEquipment: function (data) {
-            var that = this, controls = that.getControls();
-            debugger;
-
-            controls.tbodyEquipment.empty();
-
-            var lstEquipmentFilter = [];
-            var intID = 1;
-            /*Decos adicionales*/
-            /*
-            var lstEquipmentGlobal = data.filter(function (item) {
-                return item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO' 
-            });
-            */
-            /* if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT === 'TOBE') {
-                 var lstEquipmentGlobal = data.filter(function (item) {
-                     //return item.coreAdicional == 'ADICIONAL' && item.ServiceEquiptment == 'SERVICIO' && item.descEquipo.toUpperCase().indexOf('DECO') > -1
-                     return item.ServiceType == 'ALQUILER EQUIPOS IPTV'
-                 });
-             } else {
-                 var lstEquipmentGlobal = data.filter(function (item) {
-                     return item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO'
-                 });
-             }*/
-            var lstEquipmentGlobal = data.filter(function (item) {
-                return (item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO') || item.ServiceType == 'ALQUILER EQUIPOS IPTV' || item.ServiceType == 'ALQUILER EQUIPOS'
-            });
-            that.AdditionalDecos.oRequest.arrEquipment = lstEquipmentGlobal;
-            debugger;
-            /*Para obtener spcode*/
-            var lstEquipmentAdd = data.filter(function (Item) { return Item.coreAdicional == 'ADICIONAL' && Item.ServiceEquiptment == 'EQUIPO'; });
-            that.AdditionalDecos.oRequest.arrEquipmentAdd = lstEquipmentAdd;
-
-            var intMaxEquipmentPlan = lstEquipmentGlobal.length;
-            var intMaxEquipmentConfig = that.AdditionalDecos.Configuration.Constants.MaxEquipment;
-            var intMaxEquipment = 0;
-
-            if (intMaxEquipmentPlan <= intMaxEquipmentConfig) {
-                intMaxEquipment = intMaxEquipmentPlan;
-            } else {
-                intMaxEquipment = intMaxEquipmentConfig;
-            }
-
-            controls.spanMaxDecos.text(intMaxEquipment);
-            that.AdditionalDecos.oRequest.TotMax = (intMaxEquipment * 1);
-
-            lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
-                if (a.ServiceDescription > b.ServiceDescription) { return 1; }
-                if (a.ServiceDescription < b.ServiceDescription) { return -1; }
-                return 0;
-            });
-
-            var lstEquipment = lstEquipmentGlobal.map(function (item) {
-                return {
-                    tipoEquipo: item.tipoEquipo == null ? "" : item.tipoEquipo,
-                    descEquipo: item.descEquipo == null ? '' : item.descEquipo,
-                    FixedCharge: item.FixedCharge == null ? "" : item.FixedCharge,
-                    cargoFijoPromocion: item.cargoFijoPromocion == null ? "0" : item.cargoFijoPromocion,
-                    idEquipo: ''
-                };
-            });
-
-            lstEquipment.forEach(function (Item) {
-                var intEquipment = lstEquipmentFilter.filter(function (x) { return x.tipoEquipo == Item.tipoEquipo }).length;
-                if (intEquipment == 0 && Item.FixedCharge > 0) {
-                    // if (intEquipment == 0 ) {
-                    lstEquipmentFilter.push(Item);
-                }
-            });
-
-            lstEquipmentFilter.forEach(function (Item) {
-                Item.idEquipo = 'DECO' + intID;
-                intID++;
-            });
-
-
-            var arrOrigin = [];
-            var arrNew = [];
-            var arrNewRemove = [];
-
-            //
-            var lista = [];
-            var intID2 = 1;
-            //
-            lstEquipmentFilter.forEach(function (Item) {
-                var decFixedCharge = 0.00;
-
-                if (Item.tipoEquipo != "DECO_DVR") {
-                    decFixedCharge = "0.00";
-                } else {
-                    decFixedCharge = Item.FixedCharge;
-                }
-                // decFixedCharge = that.getFixedChargeEquipment(Item.tipoEquipo, Item.FixedCharge);
-
-                var oNew = {
-                    'cargoFijoPromocion': Item.cargoFijoPromocion,
-                    'descEquipo': Item.descEquipo,
-                    'FixedCharge': decFixedCharge,
-                    'idEquipo': 'DECO' + intID2,
-                    'tipoEquipo': Item.tipoEquipo
-                }
-                lista.push(oNew);
-
-                intID2++;
-            });
-
-            that.AdditionalDecos.oRequest.arrEquipmentGroup = lista;
-            that.AdditionalDecos.oRequest.arrEquipmentGroup2 = lstEquipmentFilter;
-
-            lstEquipmentFilter.forEach(function (Item) {
-                var ElementTd1 = document.createElement('td');
-                var ElementTd2 = document.createElement('td');
-                var ElementTd3 = document.createElement('td');
-                var ElementTr = document.createElement('tr');
-
-                var ElementLabelName = document.createElement('label');
-                ElementLabelName.innerHTML = Item.tipoEquipo.replace('_', ' ');
-
-                var ElementImg = document.createElement('img');
-                ElementImg.src = '/Content/Images/SUFija/ico_deco.svg';
-                ElementImg.alt = '...';
-
-                $(ElementTd1).append(ElementImg);
-                $(ElementTd1).append(ElementLabelName);
-
-                var ElementSpan = document.createElement('span');
-                ElementSpan.innerHTML = 'S/ ' + Item.FixedCharge;
-
-                $(ElementTd2).append(ElementSpan);
-
-                var ElementBtnMore = document.createElement('button');
-                ElementBtnMore.className = 'close btnMore math-operator pull-right';
-                ElementBtnMore.innerHTML = '+';
-                ElementBtnMore.id = 'btnAdd_' + Item.idEquipo;
-
-                var ElementSpanCount = document.createElement('span');
-                ElementSpanCount.id = 'SP_' + Item.idEquipo;
-                ElementSpanCount.className = 'badge math-operator pull-right TotalAmount';
-                ElementSpanCount.innerHTML = '0';
-
-                var ElementBtnMin = document.createElement('button');
-                ElementBtnMin.className = 'close btnMin math-operator pull-right';
-                ElementBtnMin.innerHTML = '-';
-                ElementBtnMin.id = 'btnRemove_' + Item.idEquipo;
-
-                $(ElementTd3).append(ElementBtnMore);
-                $(ElementTd3).append(ElementSpanCount);
-                $(ElementTd3).append(ElementBtnMin);
-
-                $(ElementTr).append(ElementTd1);
-                $(ElementTr).append(ElementTd2);
-                $(ElementTr).append(ElementTd3);
-                console.log('tbodyEquipment -> ' + ElementTr);
-                $(controls.tbodyEquipment).append(ElementTr);
-
-                ////Creacion de detalle
-                var ElementDivSummary = document.createElement('div');
-                ElementDivSummary.className = 'col-sm-12';
-                ElementDivSummary.style.fontWeight = 'bold';
-                ElementDivSummary.style.fontSize = '13px';
-                ElementDivSummary.style.paddingLeft = '30px';
-
-                var ElementImgSummary = document.createElement('img');
-                ElementImgSummary.src = '/Content/Images/SUFija/ico_deco.svg';
-                ElementImgSummary.alt = '...';
-
-                var ElementLabelSummary = document.createElement('label');
-                ElementLabelSummary.style.fontSize = '15px';
-                ElementLabelSummary.innerHTML = Item.tipoEquipo.replace('_', ' ');
-                console.log('ElementDivSummary -> ' + ElementImgSummary);
-
-                $(ElementDivSummary).append(ElementImgSummary);
-                $(ElementDivSummary).append(ElementLabelSummary);
-
-                var ElementTbody = document.createElement('tbody');
-                ElementTbody.id = 'TB_' + Item.idEquipo;
-                var ElementTableSummary = document.createElement('table');
-                ElementTableSummary.className = 'table table-borderless text-center recurrentService';
-
-                ElementTableSummary.appendChild(ElementTbody);
-
-                $(controls.DivSummary).append(ElementDivSummary);
-                $(controls.DivSummary).append(ElementTableSummary);
-            });
-
-            $('.btnMore').click(function () {
-                var strId = $(this)[0].getAttribute('id');
-                var arrId = strId.split('_');
-                var spID = arrId[1];
-
-                that.addEquipment(spID);
-            });
-
-            $('.btnMin').click(function () {
-                var strId = $(this)[0].getAttribute('id');
-                var arrId = strId.split('_');
-                var spID = arrId[1];
-
-                that.removeEquipment(spID);
-            });
-        },
         loadPlan: function (data) {
             var that = this, controls = that.getControls();
 
@@ -767,6 +571,205 @@
                 }
             });
         },
+        /*GESTION DE PUNTOS DE TV ADICIONALES*/
+        /*data:Servicios del plan actual del cliente*/
+        loadEquipment: function (data) {
+            var that = this, controls = that.getControls();
+            debugger;
+
+            controls.tbodyEquipment.empty();
+
+            var lstEquipmentFilter = [];
+            var intID = 1;
+            /*Filtra Decos adicionales disponibles del Plan*/
+            var lstEquipmentGlobal = data.filter(function (item) {
+                return (item.coreAdicional == 'EQUIPO_ALQUILER' && item.ServiceEquiptment == 'EQUIPO') || item.ServiceType == 'ALQUILER EQUIPOS FTTH' || item.ServiceType == 'ALQUILER EQUIPOS IPTV' || item.ServiceType == 'ALQUILER EQUIPOS'
+            });
+            that.AdditionalDecos.oRequest.arrEquipment = lstEquipmentGlobal;
+            debugger;
+            /*Para obtener spcode*/
+            var lstEquipmentAdd = data.filter(function (Item) { return Item.coreAdicional == 'ADICIONAL' && Item.ServiceEquiptment == 'EQUIPO'; });
+            that.AdditionalDecos.oRequest.arrEquipmentAdd = lstEquipmentAdd;
+
+            var intMaxEquipmentPlan = lstEquipmentGlobal.length;
+            var intMaxEquipmentConfig = '4'//that.AdditionalDecos.Configuration.Constants.MaxEquipment;
+            var intMaxEquipment = 0;
+
+            /*if (intMaxEquipmentPlan <= intMaxEquipmentConfig) {
+                intMaxEquipment = intMaxEquipmentPlan;
+            } else {*/
+            intMaxEquipment = intMaxEquipmentConfig;
+            /*}*/
+
+            controls.spanMaxDecos.text(intMaxEquipment);
+            that.AdditionalDecos.oRequest.TotMax = (intMaxEquipment * 1);
+            /* Ordenar por la Descripcion( Desc.) para tomar cargo fijo adecuado*/
+            /*lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
+                if (a.ServiceDescription > b.ServiceDescription) { return 1; }
+                if (a.ServiceDescription < b.ServiceDescription) { return -1; }
+                return 0;
+            });*/
+            lstEquipmentGlobal = lstEquipmentGlobal.sort(function (a, b) {
+                if (a.ServiceDescription < b.ServiceDescription) { return 1; }
+                if (a.ServiceDescription > b.ServiceDescription) { return -1; }
+                return 0;
+            });
+
+            var lstEquipment = lstEquipmentGlobal.map(function (item) {
+                return {
+                    tipoEquipo: item.tipoEquipo == null ? "" : item.tipoEquipo,
+                    descEquipo: item.descEquipo == null ? '' : item.descEquipo,
+                    FixedCharge: item.FixedCharge == null ? "" : item.FixedCharge,
+                    cargoFijoPromocion: item.cargoFijoPromocion == null ? "0" : item.cargoFijoPromocion,
+                    idEquipo: ''
+                };
+            });
+
+            lstEquipment.forEach(function (Item) {
+                var intEquipment = lstEquipmentFilter.filter(function (x) { return x.tipoEquipo == Item.tipoEquipo }).length;
+                // if (intEquipment == 0 && Item.FixedCharge > 0) {/*Esta comentado porque IP TV no se esta mostrando*/
+                if (intEquipment == 0) {
+                    lstEquipmentFilter.push(Item);
+                }
+            });
+
+            lstEquipmentFilter.forEach(function (Item) {
+                Item.idEquipo = 'DECO' + intID;
+                intID++;
+            });
+
+
+            var arrOrigin = [];
+            var arrNew = [];
+            var arrNewRemove = [];
+
+            //
+            var lista = [];
+            var intID2 = 1;
+            //
+            lstEquipmentFilter.forEach(function (Item) {
+                var decFixedCharge = 0.00;
+                /*** Ini: Revisarlo para deinstalacion*/
+                /*if (Item.tipoEquipo != "DECO_DVR") {
+                    decFixedCharge = "0.00";
+                } else {
+                   *///decFixedCharge = Item.FixedCharge;
+                /*
+                }
+                */
+                /* Fin ************/
+                /*if (Item.tipoEquipo != "DECO_DVR") {
+                    decFixedCharge = "0.00";
+                } else {
+                    decFixedCharge = Item.FixedCharge;
+                }*/
+                // decFixedCharge = that.getFixedChargeEquipment(Item.tipoEquipo, Item.FixedCharge);
+                /* GESTION DE PUNTOS DE TV ADICIONALES-Para mostrar en la Lista*/
+                var oNew = {
+                    'cargoFijoPromocion': Item.cargoFijoPromocion,
+                    'descEquipo': Item.descEquipo,
+                    'FixedCharge': Item.FixedCharge,// decFixedCharge,
+                    'idEquipo': 'DECO' + intID2,
+                    'tipoEquipo': Item.tipoEquipo
+                }
+                lista.push(oNew);
+
+                intID2++;
+            });
+
+            that.AdditionalDecos.oRequest.arrEquipmentGroup = lista;
+            that.AdditionalDecos.oRequest.arrEquipmentGroup2 = lstEquipmentFilter;
+
+            lstEquipmentFilter.forEach(function (Item) {
+                var ElementTd1 = document.createElement('td');
+                var ElementTd2 = document.createElement('td');
+                var ElementTd3 = document.createElement('td');
+                var ElementTr = document.createElement('tr');
+
+                var ElementLabelName = document.createElement('label');
+                ElementLabelName.innerHTML = Item.tipoEquipo.replace('_', ' ');
+
+                var ElementImg = document.createElement('img');
+                ElementImg.src = '/Content/Images/SUFija/ico_deco.svg';
+                ElementImg.alt = '...';
+
+                $(ElementTd1).append(ElementImg);
+                $(ElementTd1).append(ElementLabelName);
+
+                var ElementSpan = document.createElement('span');
+                ElementSpan.innerHTML = 'S/ ' + Item.FixedCharge;
+
+                $(ElementTd2).append(ElementSpan);
+
+                var ElementBtnMore = document.createElement('button');
+                ElementBtnMore.className = 'close btnMore math-operator pull-right';
+                ElementBtnMore.innerHTML = '+';
+                ElementBtnMore.id = 'btnAdd_' + Item.idEquipo;
+
+                var ElementSpanCount = document.createElement('span');
+                ElementSpanCount.id = 'SP_' + Item.idEquipo;
+                ElementSpanCount.className = 'badge math-operator pull-right TotalAmount';
+                ElementSpanCount.innerHTML = '0';
+
+                var ElementBtnMin = document.createElement('button');
+                ElementBtnMin.className = 'close btnMin math-operator pull-right';
+                ElementBtnMin.innerHTML = '-';
+                ElementBtnMin.id = 'btnRemove_' + Item.idEquipo;
+
+                $(ElementTd3).append(ElementBtnMore);
+                $(ElementTd3).append(ElementSpanCount);
+                $(ElementTd3).append(ElementBtnMin);
+
+                $(ElementTr).append(ElementTd1);
+                $(ElementTr).append(ElementTd2);
+                $(ElementTr).append(ElementTd3);
+                $(controls.tbodyEquipment).append(ElementTr);
+
+                ////Creacion de detalle
+                var ElementDivSummary = document.createElement('div');
+                ElementDivSummary.className = 'col-sm-12';
+                ElementDivSummary.style.fontWeight = 'bold';
+                ElementDivSummary.style.fontSize = '13px';
+                ElementDivSummary.style.paddingLeft = '30px';
+
+                var ElementImgSummary = document.createElement('img');
+                ElementImgSummary.src = '/Content/Images/SUFija/ico_deco.svg';
+                ElementImgSummary.alt = '...';
+
+                var ElementLabelSummary = document.createElement('label');
+                ElementLabelSummary.style.fontSize = '15px';
+                ElementLabelSummary.innerHTML = Item.tipoEquipo.replace('_', ' ');
+                $(ElementDivSummary).append(ElementImgSummary);
+                $(ElementDivSummary).append(ElementLabelSummary);
+
+                var ElementTbody = document.createElement('tbody');
+                ElementTbody.id = 'TB_' + Item.idEquipo;
+                var ElementTableSummary = document.createElement('table');
+                ElementTableSummary.className = 'table table-borderless text-center recurrentService';
+
+                ElementTableSummary.appendChild(ElementTbody);
+
+                $(controls.DivSummary).append(ElementDivSummary);
+                $(controls.DivSummary).append(ElementTableSummary);
+            });
+
+            $('.btnMore').click(function () {
+                var strId = $(this)[0].getAttribute('id');
+                var arrId = strId.split('_');
+                var spID = arrId[1];
+
+                that.addEquipment(spID);
+            });
+
+            $('.btnMin').click(function () {
+                var strId = $(this)[0].getAttribute('id');
+                var arrId = strId.split('_');
+                var spID = arrId[1];
+
+                that.removeEquipment(spID);
+            });
+        },
+        /*MIS PUNTOS DE TV ADICIONALES - AGREGAR*/
         addEquipment: function (strID) {
             var that = this, controls = that.getControls();
             debugger;
@@ -802,13 +805,13 @@
             }
 
             if (arrEquipmentRemoveSelect.length > 0) {
-               arrEquipmentRemoveSelect = arrEquipmentRemoveSelect.sort(function (a, b) {
+                arrEquipmentRemoveSelect = arrEquipmentRemoveSelect.sort(function (a, b) {
                     if (a.ServiceDescription > b.ServiceDescription) { return 1; }
                     if (a.ServiceDescription < b.ServiceDescription) { return -1; }
                     return 0;
                 });
 
-                oEquipmentAdd = arrEquipmentRemoveSelect[0];
+                oEquipmentAdd = arrEquipmentRemoveSelect[0];/*Toma el ultimo Deco Removido*/
                 //oEquipmentAdd.Price = oEquipmentSelect.FixedCharge;
 
                 /*if (oEquipmentAdd.tipoEquipo != "DECO_DVR" && intCount == 1) {
@@ -818,7 +821,8 @@
                 }*/
                 /*if(oEquipmentAdd.tipoEquipo == "DECO_DVR")
                     intDecoDVR++;*/
-                oEquipmentAdd.Price = that.getFixedChargeEquipment(oEquipmentAdd.tipoEquipo, oEquipmentSelect.FixedCharge);
+                oEquipmentAdd.Price = that.getFixedChargeEquipment(oEquipmentAdd.Type, oEquipmentSelect.FixedCharge);
+                //oEquipmentAdd.Price = that.getFixedChargeEquipment(oEquipmentAdd.tipoEquipo, oEquipmentSelect.FixedCharge);//Revisarlo
                 that.AdditionalDecos.oRequest.arrRemoveEquipment = that.AdditionalDecos.oRequest.arrRemoveEquipment.filter(function (x) { return x.LineID != oEquipmentAdd.LineID; });
 
             } else {
@@ -830,7 +834,7 @@
                 });
 
                 arrEquipmentPlan = arrEquipmentPlan.filter(function (x) { return x.tipoEquipo == oEquipmentSelect.tipoEquipo; });
-              arrEquipmentPlan = arrEquipmentPlan.sort(function (a, b) {
+                arrEquipmentPlan = arrEquipmentPlan.sort(function (a, b) {
                     if (a.ServiceDescription > b.ServiceDescription) { return 1; }
                     if (a.ServiceDescription < b.ServiceDescription) { return -1; }
                     return 0;
@@ -864,14 +868,15 @@
                 oEquipmentAdd.GroupName = oEquipmentAdd.Group;
                 oEquipmentAdd.CoreAdicional = oEquipmentAdd.coreAdicional;
                 oEquipmentAdd.Type = oEquipmentAdd.tipoEquipo;
-
+                debugger;//cargar  DECOS Actual- tabla
                 that.AdditionalDecos.oRequest.arrAddEquipment.push(oEquipmentAdd);
             }
 
             var oDetail = {
                 FixedCharge: oEquipmentAdd.Price * 1,
                 cargoFijoPromocion: oEquipmentAdd.PricePromotion * 1,
-                ServiceDescription: oEquipmentAdd.ServiceDescription
+                ServiceDescription: oEquipmentAdd.ServiceDescription,
+                type: oEquipmentAdd.tipEqu//TIPO_DECO
             };
             that.getDomDetail(oDetail, strID);
 
@@ -881,7 +886,7 @@
             spCount.text(intCount);
             controls.spanDisDecos.text(intCountMax - intEquipmentTotal);
             debugger;
-            controls.spanRegularPrice.text(decRegularAmount.toFixed(2));
+            controls.spanRegularPrice.text(Math.ceil(decRegularAmount.toFixed(2)).toFixed(2));
             controls.spanFixedPromotionalPrice.text(decPromotionCharge.toFixed(2));
 
             that.AdditionalDecos.oRequest.decPromotionAmount = decPromotionCharge.toFixed(2);
@@ -890,6 +895,7 @@
             that.getAmountOcc();
             that.getCalculateAdditional();
         },
+        /*MIS PUNTOS DE TV ADICIONALES - QUITAR*/
         removeEquipment: function (strID) {
             debugger;
             var that = this, controls = that.getControls();
@@ -898,11 +904,11 @@
             var tbSummary = document.getElementById(strTbID);
             var spCount = $('#SP_' + strID);
 
-            var arrEquipmentAdd = that.AdditionalDecos.oRequest.arrAddEquipment;
+            var arrEquipmentAdd = that.AdditionalDecos.oRequest.arrAddEquipment;/*Decos Agregados*/
             //var arrEquipmentAdd = that.AdditionalDecos.oRequest.arrEquipmentGroup2;
-            var arrEquipmentGroup = that.AdditionalDecos.oRequest.arrEquipmentGroup;
-            var arrEquipmentClient = that.AdditionalDecos.Data.AdditionalEquipment;
-            var arrEquipmentPlan = that.AdditionalDecos.oRequest.arrEquipment;
+            var arrEquipmentGroup = that.AdditionalDecos.oRequest.arrEquipmentGroup;/*Tipos de Decos*/
+            var arrEquipmentClient = that.AdditionalDecos.Data.AdditionalEquipment;/*Decos Actuales*/
+            var arrEquipmentPlan = that.AdditionalDecos.oRequest.arrEquipment;/*Decos del Plan*/
             var arrEquipment = [];
             var arrEquipment2 = [];
             var arrEquipmentAddFilter = [];
@@ -924,44 +930,61 @@
             debugger;
             if (intCount >= 0) {
                 var oGroupSelect = arrEquipmentGroup.filter(function (x) { return x.idEquipo == strID; })[0];
-                arrEquipmentAddFilter = arrEquipmentAdd.filter(function (x) { return x.Type == oGroupSelect.tipoEquipo; });
+                arrEquipmentAddFilter = arrEquipmentAdd.filter(function (x) { return x.Type == oGroupSelect.tipoEquipo; });/*Filtra Tipo Decos de los Decos AGREGADOS*/
 
-                if (arrEquipmentAddFilter.length == 0) {
+                if (arrEquipmentAddFilter.length == 0) {/*Si no se agregó Decos*/
 
                     arrEquipment = arrEquipment.filter(function (x) { return x.tipoEquipo == oGroupSelect.tipoEquipo; });
-                   arrEquipment = arrEquipment.sort(function (a, b) {
+                    arrEquipment = arrEquipment.sort(function (a, b) {
                         if (a.ServiceDescription < b.ServiceDescription) { return 1; }
                         if (a.ServiceDescription > b.ServiceDescription) { return -1; }
                         return 0;
                     });
                     debugger;
-                    var FixedChargeEquipment = that.AdditionalDecos.oRequest.arrAddEquipment.filter(function (x) { return x.idServicio == strID; }).Price;
+                    /***/
+                    //Para tomar el item correspondiente del arrEquipment.
+                    var indice = that.AdditionalDecos.oRequest.arrRemoveEquipment.filter(function (x) { return x.Type == oGroupSelect.tipoEquipo }).length;
+                    /***/
+                    /*var FixedChargeEquipment = 0;
+                    if (that.AdditionalDecos.oRequest.arrAddEquipment.length > 0)
+                        FixedChargeEquipment = that.AdditionalDecos.oRequest.arrAddEquipment.filter(function (x) { return x.idServicio == strID; }).Price;
+                    else {*/
+                    FixedChargeEquipment = arrEquipment[indice].FixedCharge;
+                    /*}*/
 
                     decRegularAmount -= FixedChargeEquipment * 1; //  (oGroupSelect.FixedCharge * 1);
-                    decPromotionAmount -= (arrEquipment[0].cargoFijoPromocion * 1);
+                    decPromotionAmount -= (arrEquipment[indice].cargoFijoPromocion * 1);
+
 
                     that.AdditionalDecos.oRequest.arrRemoveEquipment.push({
-                        LineID: that.getNotNull(arrEquipment[0].LineID),
-                        ServiceDescription: that.getNotNull(arrEquipment[0].ServiceDescription),
-                        ServiceType: that.getNotNull(arrEquipment[0].ServiceType),
-                        idServicio: that.getNotNull(arrEquipment[0].LineID),
+                        LineID: that.getNotNull(arrEquipment[indice].LineID),
+                        ServiceDescription: that.getNotNull(arrEquipment[indice].ServiceDescription),
+                        ServiceType: that.getNotNull(arrEquipment[indice].ServiceType),
+                        idServicio: that.getNotNull(arrEquipment[indice].LineID),
                         Price: that.getNotNull(FixedChargeEquipment),//that.getNotNull(oGroupSelect.FixedCharge),
-                        idGrupoPrincipal: that.getNotNull(arrEquipment[0].grupoPadre),
-                        idGrupo: that.getNotNull(arrEquipment[0].CodeGroup),
-                        banwid: that.getNotNull(arrEquipment[0].capacidad),
-                        unidadcapacidad: that.getNotNull(arrEquipment[0].unidadCapacidad),
-                        tipequ: that.getNotNull(arrEquipment[0].tipEqu),
-                        codTipoEquipo: that.getNotNull(arrEquipment[0].codigoTipEqu),
-                        descEquipo: that.getNotNull(arrEquipment[0].descEquipo),
+                        idGrupoPrincipal: that.getNotNull(arrEquipment[indice].grupoPadre),
+                        idGrupo: that.getNotNull(arrEquipment[indice].CodeGroup),
+                        banwid: that.getNotNull(arrEquipment[indice].capacidad),
+                        unidadcapacidad: that.getNotNull(arrEquipment[indice].unidadCapacidad),
+                        tipequ: that.getNotNull(arrEquipment[indice].tipEqu),
+                        codTipoEquipo: that.getNotNull(arrEquipment[indice].codigoTipEqu),
+                        descEquipo: that.getNotNull(arrEquipment[indice].descEquipo),
                         cantidad: '1',
-                        codigoExterno: that.getNotNull(arrEquipment[0].codigoExterno),
+                        codigoExterno: that.getNotNull(arrEquipment[indice].codigoExterno),
                         spcode: that.getNotNull(that.AdditionalDecos.oRequest.arrEquipmentAdd.filter(function (x) { return x.LineID == arrEquipment[0].LineID; })[0].spCode),
-                        sncode: that.getNotNull(arrEquipment[0].sncode),
-                        GroupName: that.getNotNull(arrEquipment[0].Group),
-                        CoreAdicional: that.getNotNull(arrEquipment[0].coreAdicional),
+                        sncode: that.getNotNull(arrEquipment[indice].sncode),
+                        GroupName: that.getNotNull(arrEquipment[indice].Group),
+                        CoreAdicional: that.getNotNull(arrEquipment[indice].coreAdicional),
 
-                        Type: that.getNotNull(arrEquipment[0].tipoEquipo),
-                        PricePromotion: that.getNotNull(arrEquipment[0].cargoFijoPromocion)
+                        Type: that.getNotNull(arrEquipment[indice].tipoEquipo),
+                        PricePromotion: that.getNotNull(arrEquipment[indice].cargoFijoPromocion),
+                        /*INI-ContratoPublico-TOBE*/
+                        poId: $.string.isEmptyOrNull(arrEquipment[indice].poId) ? '' : arrEquipment[indice].poId,
+                        poType: $.string.isEmptyOrNull(arrEquipment[indice].poType) ? '' : arrEquipment[indice].poType,
+                        idProductoCBIO: $.string.isEmptyOrNull(arrEquipment[indice].idProductoCBIO) ? '' : arrEquipment[indice].idProductoCBIO,
+                        pop1: $.string.isEmptyOrNull(arrEquipment[indice].pop1) ? '' : arrEquipment[indice].pop1,//POP1
+                        pop2: $.string.isEmptyOrNull(arrEquipment[indice].pop2) ? '' : arrEquipment[indice].pop2//POP2
+                        /*FIN-ContratoPublico-TOBE*/
                     });
 
                 } else {
@@ -981,27 +1004,37 @@
 
                     that.AdditionalDecos.oRequest.arrAddEquipment = that.AdditionalDecos.oRequest.arrAddEquipment.filter(function (x) { return x.LineID != arrEquipment[0].LineID; });
 
-                    /*Si quita primero el Deco con costo  '0.00'*/
-                    var boolExistEquipmentPriceZero = false;
-                    $.each(that.AdditionalDecos.oRequest.arrAddEquipment, function (index, item) {
-                        if (item.Price == '0.00') {
-                            boolExistEquipmentPriceZero = true;
-                        }
-                    });
-                    /*Limpiar todo para que n haya confunsion Precio*/
-                    if (!boolExistEquipmentPriceZero) {
-                        //that.loadClientEquipment();
-                        $('#DivSummary').empty()
-                        that.AdditionalDecos.oRequest.arrAddEquipment = [];
-                        that.loadEquipment(that.AdditionalDecos.Data.FixPlanesServCapanas);
-                        decRegularAmount = 0;
-                        //controls.spanRegularPrice.text('0.00');
-                        //that.loadPlan(that.AdditionalDecos.Data.FixPlanesServCapanas);
-                    }
 
-                    /**/
 
                 }
+                debugger;
+                /*var arrEquipmentRemove = that.AdditionalDecos.oRequest.arrRemoveEquipment/*Decos Retirados*/
+                /* var arrEquipmentGroup = that.AdditionalDecos.oRequest.arrEquipmentGroup;/*Tipos de Decos*/
+                /* var arrEquipmentClient = that.AdditionalDecos.Data.AdditionalEquipment;/*Decos Actuales*/
+                /*Si quita primero el Deco con costo  '0.00'*/
+                var boolClearPointsAdditionals = false;
+                if (false) {
+                    if (that.AdditionalDecos.oRequest.arrRemoveEquipment.length > 0)
+                        if (that.AdditionalDecos.oRequest.arrRemoveEquipment[that.AdditionalDecos.oRequest.arrRemoveEquipment.length - 1].Price == '0.00') {
+                            boolClearPointsAdditionals = true;
+                        }
+                }
+
+                /*if (that.AdditionalDecos.oRequest.arrAddEquipment[that.AdditionalDecos.oRequest.arrAddEquipment.length - 1].Price == '0.00' && ) {
+                    boolClearPointsAdditionals = true;
+                }*/
+                /*Limpiar todo para que n haya confunsion Precio*/
+                if (boolClearPointsAdditionals) {
+                    //that.loadClientEquipment();
+                    $('#DivSummary').empty()
+                    that.AdditionalDecos.oRequest.arrAddEquipment = [];
+                    that.loadEquipment(that.AdditionalDecos.Data.FixPlanesServCapanas);
+                    decRegularAmount = 0;
+                    //controls.spanRegularPrice.text('0.00');
+                    //that.loadPlan(that.AdditionalDecos.Data.FixPlanesServCapanas);
+                }
+
+                /**/
 
                 var intRow = tbSummary.getElementsByTagName('tr').length - 1;
                 $('#' + tbSummary.getElementsByTagName('tr')[intRow].id).remove();
@@ -1016,45 +1049,58 @@
             that.AdditionalDecos.oRequest.decRegularAmount = decRegularAmount;
             that.AdditionalDecos.oRequest.decRegularAmountIGV = (decRegularAmount * (('1.' + that.AdditionalDecos.Data.Configuration.Constantes_Igv) * 1)).toFixed(2);
             that.AdditionalDecos.oRequest.decPromotionAmount = decPromotionAmount;
-            controls.spanRegularPrice.text(decRegularAmount.toFixed(2));
+            controls.spanRegularPrice.text(Math.ceil(decRegularAmount.toFixed(2)).toFixed(2));
         },
-        getFixedChargeEquipment: function (tipoEquipo, fixedChargeEquipment) {//tipoEquipo, fixedCharge, intEquipmentTotal,intDecoDVR) {
+
+        getFixedChargeEquipment: function (tipoEquipo, fixedChargeEquipment) {
             debugger;
             var that = this;
+            var arrEquipmentAdd = that.AdditionalDecos.oRequest.arrAddEquipment;/*Decos Agregados*/
+            var arrEquipmentRemove = that.AdditionalDecos.oRequest.arrRemoveEquipment/*Decos Retirados*/
+            var arrEquipmentGroup = that.AdditionalDecos.oRequest.arrEquipmentGroup;/*Tipos de Decos*/
+            var arrEquipmentClient = that.AdditionalDecos.Data.AdditionalEquipment;/*Decos Actuales*/
+
             var fixedChargeEnd = '0.00';
             var intEquipmentTotalNoDVR = 0;
             var boolEquipmentDVR = false;
-            $.each(that.AdditionalDecos.oRequest.arrAddEquipment, function (index, item) {
-                if (item.tipoEquipo != 'DECO_DVR') {
-                    intEquipmentTotalNoDVR++;
-                }
-                else {
-                    boolEquipmentDVR = true;
-                }
-
-            });
+            /*1er DECO diferente a DVR  es gratis (0.00).*/
             switch (tipoEquipo) {
                 case 'DECO_DVR':
                     fixedChargeEnd = fixedChargeEquipment;
                     break;
                 case 'DECO_HD':
-                    if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0)) {
+
+                    if (arrEquipmentRemove.length > 0 && arrEquipmentRemove.length == arrEquipmentClient.length && arrEquipmentAdd.length == 0
+					|| that.AdditionalDecos.oRequest.TotMax == $("#DisDecos").html()) {//if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0 || that.Decos == 0)) {
                         fixedChargeEnd = '0.00';
                     }
                     else {
                         fixedChargeEnd = fixedChargeEquipment;
                     }
+                    // that.Decos++;
                     break;
                 case 'BASICO_HD':
-                    if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0)) {
+                    if (arrEquipmentRemove.length > 0 && arrEquipmentRemove.length == arrEquipmentClient.length && arrEquipmentAdd.length == 0
+					|| that.AdditionalDecos.oRequest.TotMax == $("#DisDecos").html()) {//arrEquipmentRemove.length == arrEquipmentClient.length && if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0 || that.Decos == 0)) {
+                        fixedChargeEnd = '0.00';
+                    }
+                    else {
+                        fixedChargeEnd = fixedChargeEquipment;
+                    }
+                    // that.Decos++;
+                    break;
+                case 'DECO_IP':
+                    if (arrEquipmentRemove.length > 0 && arrEquipmentRemove.length == arrEquipmentClient.length && arrEquipmentAdd.length == 0
+					|| that.AdditionalDecos.oRequest.TotMax == $("#DisDecos").html()) {//if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0)) {
                         fixedChargeEnd = '0.00';
                     }
                     else {
                         fixedChargeEnd = fixedChargeEquipment;
                     }
                     break;
-                case 'DECO_IP':
-                    if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0)) {
+                case 'DECO_SD':
+                    if (arrEquipmentRemove.length > 0 && arrEquipmentRemove.length == arrEquipmentClient.length && arrEquipmentAdd.length == 0
+					|| that.AdditionalDecos.oRequest.TotMax == $("#DisDecos").html()) {//if ((!boolEquipmentDVR && intEquipmentTotalNoDVR == 0) || (boolEquipmentDVR && intEquipmentTotalNoDVR == 0)) {
                         fixedChargeEnd = '0.00';
                     }
                     else {
@@ -1066,12 +1112,10 @@
                     break;
 
             }
-
             return fixedChargeEnd;
-
         },
 
-        /* Cargar servicios */
+        /*MIS PUNTOS DE TV ADICIONALES - DECOS ACTUALES*/
         loadClientEquipment: function () {
             var that = this, controls = that.getControls();
             debugger;
@@ -1081,47 +1125,24 @@
             var intEquipmentTot = 0;
             var decRegularAmount = 0;
             var decPromotionAmount = 0;
-            console.log(arrEquipmentPlan);
+            arrEquipmentPlan = arrEquipmentPlan.sort(function (a, b) {
+                if (a.ServiceDescription > b.ServiceDescription) { return 1; }
+                if (a.ServiceDescription < b.ServiceDescription) { return -1; }
+                return 0;
+            });
+            arrEquipmentClient = arrEquipmentClient.sort(function (a, b) {
+                if (a.idServPvu > b.idServPvu) { return 1; }
+                if (a.idServPvu < b.idServPvu) { return -1; }
+                return 0;
+            });
+
+            //console.log(arrEquipmentPlan);
             $.each(arrEquipmentClient, function (Index, Item) {
-                debugger;
                 console.log('Item.idServPvu --> ' + Item.idServPvu + ' -- ' + 'Item.idServPvuTobe --> ' + Item.idServPvuTobe);
-                // var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu; })[0];
                 var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu || x.LineID == Item.idServPvuTobe; })[0];
-                /* .map(function (Item) {
-                     return {
-                         CodeGroup: Item.CodeGroup,
-                         FixedCharge: Item.FixedCharge,
-                         Group: Item.Group,
-                         LineID: $.string.isEmptyOrNull(Item.idServPvu) ? Item.LineID : Item.idServPvu,//Baja de servicio -> Se debe enviar el IdServicio ASIS si es Servicio ASIS (contratos Migrados)
-                         PlanCode: Item.PlanCode,
-                         ServiceDescription: Item.ServiceDescription,
-                         ServiceEquiptment: Item.ServiceEquiptment,
-                         ServiceType: Item.ServiceType,
-                         cantidad: Item.cantidad,
-                         capacidad: Item.capacidad,
-                         cargoFijoPromocion: Item.cargoFijoPromocion,
-                         codigoExterno: Item.codigoExterno,
-                         codigoTipEqu: Item.codigoTipEqu,
-                         coreAdicional: Item.coreAdicional,
-                         descEquipo: Item.descEquipo,
-                         descExterno: Item.descExterno,
-                         grupoPadre: Item.grupoPadre,
-                         idDet: Item.idDet,
-                         idEquipo: Item.idEquipo,
-                         idProductoCBIO: Item.idProductoCBIO,
-                         poId: Item.poId,
-                         poType: Item.poType,
-                         pop1: Item.pop1,
-                         pop2: Item.pop2,
-                         sncode: Item.sncode,
-                         spCode: Item.spCode,
-                         tipEqu: Item.tipEqu,
-                         tipoEquipo: Item.tipoEquipo,
-                         unidadCapacidad: Item.unidadCapacidad
-                     }
-                 });
-                        */
+                debugger;
                 var oGroup = arrEquipmentGroup.filter(function (x) { return x.tipoEquipo == oEquipment.tipoEquipo })[0];
+
                 if (oEquipment != null) {
                     var strID = oGroup.idEquipo;
                     var strSpanID = 'SP_' + strID;
@@ -1129,14 +1150,15 @@
                     document.getElementById(strSpanID).innerHTML = (document.getElementById(strSpanID).innerHTML * 1) + 1;
 
                     var oDetail = {
-                        FixedCharge: oGroup.FixedCharge * 1,
+                        FixedCharge: that.getFixedChargeEquipment(oEquipment.tipoEquipo, oEquipment.FixedCharge * 1),
                         cargoFijoPromocion: oEquipment.cargoFijoPromocion * 1,
-                        ServiceDescription: oEquipment.ServiceDescription
+                        ServiceDescription: oEquipment.ServiceDescription,
+                        type: oEquipment.tipoEquipo
                     };
                     that.getDomDetail(oDetail, strID);
 
-                    decRegularAmount += (oGroup.FixedCharge * 1);
-                    decPromotionAmount += (oEquipment.cargoFijoPromocion * 1);
+                    decRegularAmount += (oDetail.FixedCharge * 1);// decRegularAmount += (oGroup.FixedCharge * 1);
+                    decPromotionAmount += (oDetail.cargoFijoPromocion * 1);
                 }
 
                 intEquipmentTot++;
@@ -1150,7 +1172,7 @@
             that.AdditionalDecos.oRequest.decPromotionAmount = decPromotionAmount.toFixed(2);
 
             controls.spanDisDecos.text(that.AdditionalDecos.oRequest.TotMax - intEquipmentTot);
-            controls.spanRegularPrice.text(decRegularAmount.toFixed(2));
+            controls.spanRegularPrice.text(Math.ceil(decRegularAmount.toFixed(2)).toFixed(2));
             controls.spanFixedPromotionalPrice.text(decPromotionAmount.toFixed(2));
         },
 
@@ -1193,8 +1215,6 @@
                 controls.ipClientEmail.val(that.AdditionalDecos.Data.CustomerInformation.Email);
                 that.AdditionalDecos.oRequest.strFlagMail = '1';
 
-                //Cargar visita tecnica
-                //that.loadTechnicalVisit();
                 var cantDecosInstall = that.AdditionalDecos.oRequest.arrAddEquipment.length;
                 var cantDecosUnInstall = that.AdditionalDecos.oRequest.arrRemoveEquipment.length;
                 var cantDecos = cantDecosInstall > 0 ? cantDecosInstall : cantDecosUnInstall;
@@ -1224,49 +1244,43 @@
 
             if (controls.DivScheduling.length > 0) {
 
-                //SI APLICA VISITA TÉCNICA, ENTONCES VALIDAMOS LOS DATOS
-                if (strFlgVisTecnica != '0') {
-                    if (controls.ipCalendar.val().length <= 0) {
-                        controls.ipCalendar.closest('.form-control').addClass('has-error');
-                        controls.ErrorMessagetxtCalendar.text('Ingrese una fecha válida');
-                        alert('Ingrese una fecha válida');
-                        controls.ipCalendar.focus();
-                        return false;
-                    }
-
-
-                    if ($("#cboTypeWork option:selected").html() == '-Seleccionar-') {
-                        controls.cboTypeWork.closest('.form-control').addClass('has-error');
-                        controls.ErrorMessageddlWorkType.text('Seleccione un Tipo de Trabajo válido');
-                        alert('Seleccione un Tipo de Trabajo válido');
-                        controls.cboTypeWork.focus();
-                        return false;
-                    }
+                if ($("#cboTypeWork option:selected").html() == '-Seleccionar-') {
+                    controls.cboTypeWork.closest('.form-control').addClass('has-error');
+                    controls.ErrorMessageddlWorkType.text('Seleccione un Tipo de Trabajo válido');
+                    alert('Seleccione un Tipo de Trabajo válido');
+                    controls.cboTypeWork.focus();
+                    return false;
+                }
 
 
 
-                    if ($("#cboStypeWork option:selected").html() == '-Seleccionar-') {
-                        controls.cboStypeWork.closest('.form-control').addClass('has-error');
-                        controls.ErrorMessageddlSubWorkType.text('Seleccione un Sub Tipo de Trabajo válido');
-                        alert('Seleccione un Sub Tipo de Trabajo válido');
-                        controls.cboStypeWork.focus();
-                        return false;
-                    }
+                if ($("#cboStypeWork option:selected").html() == '-Seleccionar-') {
+                    controls.cboStypeWork.closest('.form-control').addClass('has-error');
+                    controls.ErrorMessageddlSubWorkType.text('Seleccione un Sub Tipo de Trabajo válido');
+                    alert('Seleccione un Sub Tipo de Trabajo válido');
+                    controls.cboStypeWork.focus();
+                    return false;
+                }
+                if (controls.ipCalendar.val().length <= 0) {
+                    controls.ipCalendar.closest('.form-control').addClass('has-error');
+                    controls.ErrorMessagetxtCalendar.text('Ingrese una fecha válida');
+                    alert('Ingrese una fecha válida');
+                    controls.ipCalendar.focus();
+                    return false;
+                }
 
-                    if ($("#cboSchedule option:selected").html() == 'Seleccionar') {
-                        controls.cboSchedule.closest('.form-control').addClass('has-error');
-                        controls.ErrorMessageddlTimeZone.text('Seleccione un Horario válido');
-                        alert('Seleccione un Horario válido');
-                        controls.cboSchedule.focus();
-                        return false;
-                    }
+                if ($("#cboSchedule option:selected").html() == 'Seleccionar') {
+                    controls.cboSchedule.closest('.form-control').addClass('has-error');
+                    controls.ErrorMessageddlTimeZone.text('Seleccione un Horario válido');
+                    alert('Seleccione un Horario válido');
+                    controls.cboSchedule.focus();
+                    return false;
                 }
 
                 if (!that.chkMail_focus()) {
                     alert('Ingrese una dirección de correo válida.');
                     return false;
                 }
-
                 if ($("#cboPointAttention option:selected").html() == '-Seleccionar-') {
                     controls.cboPointAttention.closest('.form-control').addClass('has-error');
                     controls.ErrorMessageddlCenterofAttention.text('Seleccione un Centro de Atención válido');
@@ -1348,25 +1362,25 @@
             $.each(LstGroupAdd, function (idx, e) {
                 if (e.totAmount > 0) {
                     controls.DivContenInstallEquipment.show();
-                    var elementImg = document.createElement('img');
-                    var elementSpan1 = document.createElement('span');
-                    var elementSpan2 = document.createElement('span');
+                    var elementImgAdd = document.createElement('img');
+                    var elementSpan1Add = document.createElement('span');
+                    var elementSpan2Add = document.createElement('span');
 
-                    elementImg.src = '/Content/Images/SUFija/ico_deco.svg';
-                    elementImg.alt = '...';
+                    elementImgAdd.src = '/Content/Images/SUFija/ico_deco.svg';
+                    elementImgAdd.alt = '...';
 
-                    elementSpan1.innerHTML = string.format('{0} {1}', e.totAmount, e.descEquipo.replace('_', ' '));
-                    elementSpan1.className = 'spanAddEquipment';
+                    elementSpan1Add.innerHTML = string.format('{0} {1}', e.totAmount, e.descEquipo.replace('_', ' '));
+                    elementSpan1Add.className = 'spanAddEquipment';
 
-                    elementSpan2.innerHTML = ' + ';
-                    elementSpan2.className = 'spanAddEquipmentPlus';
+                    elementSpan2Add.innerHTML = ' + ';
+                    elementSpan2Add.className = 'spanAddEquipmentPlus';
 
                     if (intIndex > 0) {
-                        $(controls.DivInstallEquipment).append(elementSpan2);
+                        $(controls.DivInstallEquipment).append(elementSpan2Add);
                     }
 
-                    $(controls.DivInstallEquipment).append(elementImg);
-                    $(controls.DivInstallEquipment).append(elementSpan1);
+                    $(controls.DivInstallEquipment).append(elementImgAdd);
+                    $(controls.DivInstallEquipment).append(elementSpan1Add);
                     intIndex++;
                 }
 
@@ -1375,25 +1389,25 @@
             $.each(LstGroupRemove, function (idx, e) {
                 if (e.totAmount > 0) {
                     controls.DivContenUnInstallEquipment.show();
-                    var elementImg = document.createElement('img');
-                    var elementSpan1 = document.createElement('span');
-                    var elementSpan2 = document.createElement('span');
+                    var elementImgRemove = document.createElement('img');
+                    var elementSpan1Remove = document.createElement('span');
+                    var elementSpan2Remove = document.createElement('span');
 
-                    elementImg.src = '/Content/Images/SUFija/ico_deco.svg';
-                    elementImg.alt = '...';
+                    elementImgRemove.src = '/Content/Images/SUFija/ico_deco.svg';
+                    elementImgRemove.alt = '...';
 
-                    elementSpan1.innerHTML = string.format('{0} {1}', e.totAmount, e.descEquipo);
-                    elementSpan1.className = 'spanAddEquipment';
+                    elementSpan1Remove.innerHTML = string.format('{0} {1}', e.totAmount, e.descEquipo);
+                    elementSpan1Remove.className = 'spanAddEquipment';
 
-                    elementSpan2.innerHTML = ' + ';
-                    elementSpan2.className = 'spanAddEquipmentPlus';
+                    elementSpan2Remove.innerHTML = ' - ';
+                    elementSpan2Remove.className = 'spanAddEquipmentPlus';
 
                     if (intIndex > 0) {
-                        $(controls.DivUninstallEquipment).append(elementSpan2);
+                        $(controls.DivUninstallEquipment).append(elementSpan2Remove);
                     }
 
-                    $(controls.DivUninstallEquipment).append(elementImg);
-                    $(controls.DivUninstallEquipment).append(elementSpan1);
+                    $(controls.DivUninstallEquipment).append(elementImgRemove);
+                    $(controls.DivUninstallEquipment).append(elementSpan1Remove);
 
                     intIndex++;
                 }
@@ -1409,7 +1423,14 @@
                 markup += '<b>---------------SERVICIOS DESACTIVADOS---------------</b><br />';
                 markup += elementSpanUnInstall;
             }
-            markup += string.format('<b>Costo Instalación:</b>{0} <br />', that.AdditionalDecos.oRequest.decLoyaltyAmount);
+
+            if (that.AdditionalDecos.oRequest.arrAddEquipment.length > 0) {
+                markup += string.format('<b>Costo Instalación:</b>{0} <br />', that.AdditionalDecos.oRequest.decLoyaltyAmount);
+            }
+            else {
+                markup += string.format('<b>Costo Desinstalación :</b>{0} <br />', that.AdditionalDecos.oRequest.decLoyaltyAmount);
+            }
+
             markup += string.format('<b>Cargo Fijo Actual:</b>{0}<br />', that.getTransformNumber(decAmountCurrent.toFixed(2)));
             markup += string.format('<b>Cargo Equipos:</b> {0}<br />', that.getTransformNumber((decEquipmentAmount * 1).toFixed(2)));
             markup += string.format('<b>Cargo Equipos Retirados:</b> {0}<br />', that.getTransformNumber(decEquipmentAmountRes.toFixed(2)));
@@ -1433,117 +1454,10 @@
         },
 
 
-        loadTechnicalVisit: function () {
-            var that = this, controls = that.getControls();
-
-            that.getLoadingPage();
-
-            var datos = that.AdditionalDecos.oRequest.arrAddServices == undefined ? [] : that.AdditionalDecos.oRequest.arrAddServices;
-            var datosPrincipales = that.AdditionalDecos.oRequest.arrCoreServices == undefined ? [] : that.AdditionalDecos.oRequest.arrCoreServices;
-            var datosEquipos = [];
-            if (that.AdditionalDecos.oRequest.strTypeWork == that.AdditionalDecos.Configuration.Constants.TypeWorkAdd) {
-                datosEquipos = that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
-            }
-            if (that.AdditionalDecos.oRequest.strTypeWork == that.AdditionalDecos.Configuration.Constants.TypeWorkRemove) {
-                datosEquipos = that.AdditionalDecos.oRequest.arrRemoveEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrRemoveEquipment;
-            }
-            if (that.AdditionalDecos.oRequest.strTypeWork == that.AdditionalDecos.Configuration.Constants.TypeWorkBoth) {
-                datosEquipos = that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
-                if (that.AdditionalDecos.oRequest.arrRemoveEquipment != undefined) {
-                    datosEquipos.concat(that.AdditionalDecos.oRequest.arrRemoveEquipment);
-                }
-            }
-
-            datos = datos.concat(datosPrincipales);
-            datos = datos.concat(datosEquipos);
-
-            var xdata = [{ "SERVICIO": "", "CODTIEQU": "", "TIEQU": "" }];
-            var xjsonTramaVisitaTecnica = {
-                "listaTrama": []
-            };
-
-            datos.forEach(function (items) {
-                var keys = Object.keys(items);
-                var x = { "lista": [] };
-
-                keys.forEach(function (key) {
-                    var tag = that.getNameTagVisitaTecnica(key);
-                    var feed = {
-                        nombre: tag,
-                        valor: items[key]
-                    };
-                    if (tag.length > 0) {
-                        x.lista.push(feed);
-                    }
-
-                });
-
-                x.lista.push({
-                    "nombre": "TRSV_IP",
-                    //"valor": '172.19.91.216'
-                    "valor": that.AdditionalDecos.Data.AuditRequest.idApplication
-                });
-                x.lista.push({
-                    "nombre": "TRSV_USUARIO",
-                    //"valor": "C12640"
-                    "valor": Session.SessionParams.USERACCESS.login
-                });
-                xjsonTramaVisitaTecnica.listaTrama.push(x);
-            });
-
-            var objLoadParameters = {
-                ContratoId: Session.SessionParams.DATACUSTOMER.ContractID,
-                customerId: Session.SessionParams.DATACUSTOMER.CustomerID,
-                listaTrama: xjsonTramaVisitaTecnica.listaTrama
-            };
-
-            $.app.ajax({
-                type: 'POST',
-                contentType: "application/json; charset=utf-8",
-                url: '/AdditionalDecos/Home/GetDatosVisitaTecnica',
-                data: JSON.stringify(objLoadParameters),
-                success: function (response) {
-                    that.AdditionalDecos.Data.VisitaTecnica = {};
-
-                    //if(response.dataVisitaTecnica.CodigoRespuesta == "0"){
-                    //    /* OJO: APLICA VISITA TECNIA SI ES DIFERENTE A "0" */
-                    //    //response.dataVisitaTecnica.flagVisitaTecnica = '1';//    quitar
-
-                    //    that.planMigrationSession.Data.VisitaTecnica = response.dataVisitaTecnica
-                    //}
-
-
-
-                    that.AdditionalDecos.Data.VisitaTecnica = response.dataVisitaTecnica
-
-                    that.AdditionalDecos.oRequest.strCodMotot = response.dataVisitaTecnica.CodMotot;
-
-
-                    var cantDecosInstall = that.AdditionalDecos.oRequest.arrAddEquipment.length;
-                    var cantDecosUnInstall = that.AdditionalDecos.oRequest.arrRemoveEquipment.length;
-                    var cantDecos = cantDecosInstall > 0 ? cantDecosInstall : cantDecosUnInstall;
-
-                    var oRequest = {
-                        idTransaccion: that.AdditionalDecos.Data.idTransactionFront,
-                        idProceso: '3',
-                        tecnologia: that.AdditionalDecos.oRequest.strTechnology,
-                        contratoId: Session.SessionParams.DATACUSTOMER.ContractID,
-                        origen: that.AdditionalDecos.Configuration.Constants.Origen,
-                        idPlano: that.AdditionalDecos.Data.Instalation.CodPlano,
-                        ubigeo: that.AdditionalDecos.Data.Instalation.Ubigeo,
-                        tipTra: that.AdditionalDecos.oRequest.strTypeWork,
-                        tipSrv: that.AdditionalDecos.Configuration.Constants.Tipservicio,
-                        cantDeco: cantDecos
-                    };
-                    that.loadProgramming(oRequest);
-                },
-                error: function (ex) {
-                }
-            });
-        },
         loadProgramming: function (oRequest) {
             var that = this, controls = that.getControls();
             that.getLoadingPage();
+            debugger;
             $.app.ajax({
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
@@ -2200,6 +2114,8 @@
                                 controls.divFooterInfoSot.prepend('Nro. SOT: ' + nroSot + ' </p>');
 
                                 $('.transaction-button-Steps').attr('disabled', true);
+                                that.AdditionalDecos.Data.Constancia = !$.string.isEmptyOrNull(response.data.MessageResponse.Body.constancia) ? true : false;
+
                             }
                         } else {
                             alert('No se pudo ejecutar la transacción. Informe o vuelva a intentar')
@@ -2220,7 +2136,7 @@
             var strTrama = '';
             var dtStateDate = Session.SessionParams.DATASERVICE.StateDate;
             //var strObservacion = (that.getNotNull(that.AdditionalDecos.Data.VisitaTecnica.anotaciones) == '') ? controls.txtNote.val() : that.AdditionalDecos.Data.VisitaTecnica.anotaciones + ' ' + controls.txtNote.val();
-            var strObservacion = controls.txtNote.val().replace(/\n/g, "\\n");
+            var strObservacion = controls.txtNote.val().replace(/\t/g, " ").replace(/\n/g, "\\n");
             strTrama += '<BODY>';
             strTrama += string.format('<APLICACION>{0}</APLICACION>', 'SIAC_UNICO');
             strTrama += string.format('<COD_ID>{0}</COD_ID>', Session.SessionParams.DATACUSTOMER.ContractID);
@@ -2229,7 +2145,7 @@
             strTrama += string.format('<DEPARTAMENTO>{0}</DEPARTAMENTO>', that.AdditionalDecos.Data.Instalation.Departamento);
             strTrama += string.format('<DIRECCION_FACTURACION>{0}</DIRECCION_FACTURACION>', $.string.isEmptyOrNull(Session.SessionParams.DATACUSTOMER.InvoiceAddress) ? '' : Session.SessionParams.DATACUSTOMER.InvoiceAddress);
             strTrama += string.format('<DISTRITO>{0}</DISTRITO>', that.AdditionalDecos.Data.Instalation.Distrito);
-            strTrama += string.format('<FLAG_ACT_DIR_FACT>{0}</FLAG_ACT_DIR_FACT>', '1');
+            strTrama += string.format('<FLAG_ACT_DIR_FACT>{0}</FLAG_ACT_DIR_FACT>', '0');
             strTrama += string.format('<MONTO_OCC>{0}</MONTO_OCC>', Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT === 'TOBE' ? that.AdditionalDecos.oRequest.decLoyaltyAmount : that.getTransformNumber((parseFloat(that.AdditionalDecos.oRequest.decLoyaltyAmount) / parseFloat("1." + that.AdditionalDecos.Data.Configuration.Constantes_Igv)).toFixed(2)));
             strTrama += string.format('<NOTAS_DIRECCION>{0}</NOTAS_DIRECCION>', $.string.isEmptyOrNull(that.AdditionalDecos.Data.Instalation.NotaDireccion) ? '' : that.AdditionalDecos.Data.Instalation.NotaDireccion);
             strTrama += string.format('<OBSERVACION>{0}</OBSERVACION>', strObservacion);
@@ -2241,7 +2157,7 @@
             strTrama += string.format('<TIPTRA>{0}</TIPTRA>', controls.cboTypeWork.val());
             strTrama += string.format('<FLAG_FIDELIZA>{0}</FLAG_FIDELIZA>', that.AdditionalDecos.oRequest.strLoyalty);
             strTrama += string.format('<FEC_VIG>{0}</FEC_VIG>', $.trim(dtStateDate.split(' ')[0]));
-            strTrama += string.format('<FECPROG>{0}</FECPROG>', that.getFechaActual());
+            strTrama += string.format('<FECPROG>{0}</FECPROG>', $("#txtCalendar").val());
             strTrama += string.format('<CODPLAN>{0}</CODPLAN>', that.AdditionalDecos.Data.planCode);
             /**/
             strTrama += string.format('<COD_INTERCASO>{0}</COD_INTERCASO>', '@idInteraccion');
@@ -2254,6 +2170,7 @@
             strTrama += string.format('<NODOPOSTVENTA>{0}</NODOPOSTVENTA>', 'Nodo ' + $("#spnNode").text());
             strTrama += string.format('<PLATF_FACTURADOR>{0}</PLATF_FACTURADOR>', that.AdditionalDecos.Configuration.Constants.Plataforma_Facturador);
             strTrama += '</BODY>';
+            debugger;
             return strTrama;
         },
         getXMLTramaServicios: function () {
@@ -2261,20 +2178,21 @@
             debugger;
             var datosAdicionales = [];//that.AdditionalDecos.oRequest.arrAddServices == undefined ? [] : that.AdditionalDecos.oRequest.arrAddServices;            
             var datosPrincipales = []; //that.AdditionalDecos.oRequest.arrCoreServices == undefined ? [] : that.AdditionalDecos.oRequest.arrCoreServices;
-            var datosEquipos = [];//that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
+            //var datosEquipos = [];//that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
+
+            var equDataActivate = [];
+            var equDataDesactivate = [];
             var accion = "";
             if (that.AdditionalDecos.oRequest.strTypeWork == that.AdditionalDecos.Configuration.Constants.TypeWorkAdd) {
-                datosEquipos = that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
+                equDataActivate = that.AdditionalDecos.oRequest.arrAddEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrAddEquipment;
                 accion = "A";
             }
             if (that.AdditionalDecos.oRequest.strTypeWork == that.AdditionalDecos.Configuration.Constants.TypeWorkRemove) {
-                datosEquipos = that.AdditionalDecos.oRequest.arrRemoveEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrRemoveEquipment;
+                equDataDesactivate = that.AdditionalDecos.oRequest.arrRemoveEquipment == undefined ? [] : that.AdditionalDecos.oRequest.arrRemoveEquipment;
                 accion = "D";
             }
 
-            var predata = datosAdicionales.concat(datosPrincipales);
-            var data = datosEquipos.concat(predata);
-
+            var data = equDataActivate.concat(equDataDesactivate);
             var detailXML = "";
             data.forEach(function (select, idx) {
                 var feed = "<ITEM>";
@@ -2319,16 +2237,15 @@
                     select.sncode,
                     select.spcode,
                     accion,
-                    select.poId,//POID
-                    select.poType,//POTYPE
-                    select.idProductoCBIO,//IDPRODUCTO
-                    select.pop1,//POP1
-                    select.pop2)//POP2
+                    select.poId,
+                    select.poType,
+                    select.idProductoCBIO,
+                    select.pop1,
+                    select.pop2)
 
                 detailXML += XMLDetailService + "</ITEM>";
             });
-
-
+            debugger;
             return "<BODY>" + detailXML + "</BODY>";
         },
         getXMLTramaConstancia: function () {
@@ -2359,17 +2276,18 @@
             var detailXML = "";
             var XMLServicios = "";
             var feed = "";
-
+            var totPriceIGV = 0;
             datosEquipos.forEach(function (select, idx) {
                 //decDetailAmountIGV = select.Price * decIGV;
                 price = (select.Price * 1).toFixed(2);
+                totPriceIGV = (parseFloat(totPriceIGV) + parseFloat(price)).toFixed(2);
+
                 detailXML = "<NOMBRE_EQUIPO>{0}</NOMBRE_EQUIPO>";
                 detailXML += "<TIPO_SERVICIO>{1}</TIPO_SERVICIO>";
                 detailXML += "<CARGO_FIJO_SIN_IGV>{2}</CARGO_FIJO_SIN_IGV>";
                 XMLServicios += string.format(detailXML,
                     select.ServiceDescription,
                     select.ServiceType,
-                    //decDetailAmountIGV.toFixed(2)
 					price
                 );
             });
@@ -2397,7 +2315,7 @@
             feed += string.format("<FECHA_COMPROMISO>{0}</FECHA_COMPROMISO>", $("#txtCalendar").val());
             feed += XMLServicios;
             feed += string.format("<CANTIDAD_DESINSTALAR>{0}</CANTIDAD_DESINSTALAR>", intCount);
-            feed += string.format("<CARGO_FIJO_CON_IGV>{0}</CARGO_FIJO_CON_IGV>", 'S/ ' + that.AdditionalDecos.oRequest.decRegularAmountIGV);
+            feed += string.format("<CARGO_FIJO_CON_IGV>{0}</CARGO_FIJO_CON_IGV>", 'S/ ' + totPriceIGV),
             feed += string.format("<FIDELIZAR>{0}</FIDELIZAR>", strLoyalty);
             feed += string.format("<COSTO_INSTALACION>{0}</COSTO_INSTALACION>", 'S/ ' + that.AdditionalDecos.oRequest.decLoyaltyAmount);
             feed += string.format("<ENVIO_CORREO>{0}</ENVIO_CORREO>", strFlagMail);
@@ -2562,7 +2480,6 @@
             var oRequest = {
                 idTransaccion: that.AdditionalDecos.Data.idTransactionFront,
                 idProceso: '3',
-                //tecnologia: '9',
                 tecnologia: that.AdditionalDecos.oRequest.strTechnology,
                 contratoId: Session.SessionParams.DATACUSTOMER.ContractID,
                 origen: that.AdditionalDecos.Configuration.Constants.Origen,
@@ -2735,24 +2652,21 @@
             var lstTypeWork = that.AdditionalDecos.Data.TypeWork;
             var oValidateETA = that.AdditionalDecos.Data.ValidaEta;
             var intTypeWork = 0;
-
             controls.cboTypeWork.empty();
+            debugger;
+            controls.cboTypeWork.attr('disabled', false);
             controls.cboTypeWork.append($('<option>', { value: '', html: '-Seleccionar-' }));
-            lstTypeWork.forEach(function (Item) {
-
-                if (Item.TipoTrabajo == that.AdditionalDecos.oRequest.strTypeWork) {
-                    controls.cboTypeWork.append($('<option>', { value: Item.TipoTrabajo, html: Item.Descripcion, selected: true }));
+            $.each(lstTypeWork, function (index, value) {
+                if (value.TipoTrabajo == that.AdditionalDecos.oRequest.strTypeWork) {
+                    controls.cboTypeWork.attr('disabled', true);
+                    controls.cboTypeWork.append($('<option>', { value: value.TipoTrabajo, html: value.Descripcion, selected: true }));
                     intTypeWork++;
-                } else {
-                    controls.cboTypeWork.append($('<option>', { value: Item.TipoTrabajo, html: Item.Descripcion }));
                 }
+                else {
+                    controls.cboTypeWork.append($('<option>', { value: value.TipoTrabajo, html: value.Descripcion }));
+                }
+
             });
-
-            if (intTypeWork > 0) { controls.cboTypeWork.attr('disabled', true); } else { controls.cboTypeWork.attr('disabled', false); }
-
-            //if (oValidateETA.FlagIndica == null || oValidateETA.FlagIndica == '0') {
-            //alert("No aplica agendamiento en línea, favor de continuar con la operación.", "Alerta");
-            //}
         },
         GetSubWorkType: function () {
             var that = this, controls = this.getControls();
@@ -2817,45 +2731,6 @@
                         objeto.append($('<option>', { value: value.Descripcion, html: value.Descripcion }));
 
                 });
-            }
-        },
-        getNameTagVisitaTecnica: function (n) {
-            switch (n) {
-                case "idServicio":
-                    return "TRSV_IDSERVICIO_SISACT"
-                    break;
-                case "codTipoEquipo":
-                    return "TRSV_CODTIPEQU"
-                    break;
-                case "tipequ":
-                    return "TRSV_TIPEQU"
-                    break;
-                case "ServiceDescription":
-                    return "TRSV_DSCSRV"
-                    break;
-                case "idGrupoPrincipal":
-                    return "TRSV_IDGRUPO_PRINCIPAL"
-                    break;
-                case "idGrupo":
-                    return "TRSV_IDGRUPO"
-                    break;
-                case "banwid":
-                    return "TRSN_BANWID"
-                    break;
-                case "unidadcapacidad":
-                    return "TRSV_UNIDAD_CAP"
-                    break;
-                case "codigoExterno":
-                    return "TRSV_CODIGO_EXT"
-                    break;
-                case "descEquipo":
-                    return "TRSV_DSCEQU"
-                    break;
-                case "CoreAdicional":
-                    return "TRSV_COREADICIONAL"
-                    break;
-                default:
-                    return ""
             }
         },
         getSetting: function (data, value) {
@@ -2965,14 +2840,19 @@
             return strResult;
         },
         btnConstancy_click: function () {
+            var that = this;
             var params = ['height=600',
                 'width=750',
                 'resizable=yes',
                 'location=yes'
             ].join(',');
-
             var strIdSession = Session.UrlParams.IdSession;
-            window.open('/AdditionalDecos/Home/ShowRecordSharedFile' + "?&strIdSession=" + strIdSession, "_blank", params);
+
+            if (that.AdditionalDecos.Data.Constancia)
+                window.open('/AdditionalDecos/Home/ShowRecordSharedFile' + "?&strIdSession=" + strIdSession, "_blank", params);
+            else
+                alert('Ocurrió un error al generar la constancia.');
+
         },
         getAmountOcc: function () {
             var that = this, controls = this.getControls();
@@ -2984,14 +2864,14 @@
             var arrRemove = that.AdditionalDecos.oRequest.arrRemoveEquipment || [];
             var intAdd = arrAdd.length;
             var intRemove = arrRemove.length;
-
+            debugger;
             var strIgv = "1." + that.AdditionalDecos.Data.Configuration.Constantes_Igv;
             if (controls.chkFideliza.is(':checked')) {
                 controls.spanInstalationPrice.text('0,00');
                 that.AdditionalDecos.oRequest.decLoyaltyAmount = '0,00';
             } else {
                 if (intAdd > 0 && intRemove == 0) {
-                    var montoIgv = (parseFloat(that.AdditionalDecos.Configuration.Constants.MontoOcc.replace(',', '.')) * parseFloat(strIgv)).toFixed(2).replace('.', ',');
+                    var montoIgv = (Math.ceil(parseFloat(that.AdditionalDecos.Configuration.Constants.MontoOcc.replace(',', '.')) * parseFloat(strIgv))).toFixed(2).replace('.', ',');
                     controls.spanInstalationPrice.text(montoIgv);
                     that.AdditionalDecos.oRequest.decLoyaltyAmount = montoIgv;
                 } else if (intAdd == 0 && intRemove > 0) {

@@ -425,12 +425,13 @@ namespace Claro.SIACU.App.AdditionalDecos.Areas.AdditionalDecos.Controllers
             };
             try
             {
+                databytesFile = null;
                 Tools.Traces.Logging.Info(stridSession, oDataRequest.Audit.Transaction, "Url: " + strUrl); 
                 Tools.Traces.Logging.Info(stridSession, oDataRequest.Audit.Transaction, "Request postGeneraTransaccion DP AdditionalDecos: " + JsonConvert.SerializeObject(oDataRequest));
                 oDataResponse = Utils.RestService.PostInvoque<Models.Transversal.GuardarDatosResponse>(strUrl, oDataRequest.Audit, oDataRequest, true);
                 Tools.Traces.Logging.Info(stridSession, oDataRequest.Audit.Transaction, "Response postGeneraTransaccion DP AdditionalDecos: " + JsonConvert.SerializeObject(oDataResponse));
                 databytesFile = Convert.FromBase64String(oDataResponse.MessageResponse.Body.constancia);
-                oDataResponse.MessageResponse.Body.constancia = "";
+                
 
             }
             catch (Exception ex)
