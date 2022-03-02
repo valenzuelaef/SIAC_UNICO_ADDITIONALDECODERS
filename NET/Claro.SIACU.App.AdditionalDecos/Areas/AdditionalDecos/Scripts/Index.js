@@ -1136,33 +1136,38 @@
                 return 0;
             });
 
-            //console.log(arrEquipmentPlan);
+            console.log('plataformaAT: ' + Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT);
             $.each(arrEquipmentClient, function (Index, Item) {
-                console.log('Item.idServPvu --> ' + Item.idServPvu + ' -- ' + 'Item.idServPvuTobe --> ' + Item.idServPvuTobe);
-                var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu || x.LineID == Item.idServPvuTobe; })[0];
-                debugger;
-                var oGroup = arrEquipmentGroup.filter(function (x) { return x.tipoEquipo == oEquipment.tipoEquipo })[0];
+                console.log('Item.idServPvu --> ' + Item.idServPvu + ' - o - ' + 'Item.idServPvuTobe --> ' + Item.idServPvuTobe);
+				if (!($.array.isEmptyOrNull(Item.idServPvu) && $.array.isEmptyOrNull(Item.idServPvuTobe))) {
+					 if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT == 'TOBE')
+                        var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu || x.LineID == Item.idServPvuTobe; })[0];
+                    else
+                        var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu })[0];
+					debugger;
+					var oGroup = arrEquipmentGroup.filter(function (x) { return x.tipoEquipo == oEquipment.tipoEquipo })[0];
 
-                if (oEquipment != null) {
-                    var strID = oGroup.idEquipo;
-                    var strSpanID = 'SP_' + strID;
+					if (oEquipment != null) {
+						var strID = oGroup.idEquipo;
+						var strSpanID = 'SP_' + strID;
 
-                    document.getElementById(strSpanID).innerHTML = (document.getElementById(strSpanID).innerHTML * 1) + 1;
+						document.getElementById(strSpanID).innerHTML = (document.getElementById(strSpanID).innerHTML * 1) + 1;
 
-                    var oDetail = {
-                        FixedCharge: that.getFixedChargeEquipment(oEquipment.tipoEquipo, oEquipment.FixedCharge * 1),
-                        cargoFijoPromocion: oEquipment.cargoFijoPromocion * 1,
-                        ServiceDescription: oEquipment.ServiceDescription,
-                        type: oEquipment.tipoEquipo
-                    };
-                    that.getDomDetail(oDetail, strID);
+						var oDetail = {
+							FixedCharge: that.getFixedChargeEquipment(oEquipment.tipoEquipo, oEquipment.FixedCharge * 1),
+							cargoFijoPromocion: oEquipment.cargoFijoPromocion * 1,
+							ServiceDescription: oEquipment.ServiceDescription,
+							type: oEquipment.tipoEquipo
+						};
+						that.getDomDetail(oDetail, strID);
 
-                    decRegularAmount += (oDetail.FixedCharge * 1);// decRegularAmount += (oGroup.FixedCharge * 1);
-                    decPromotionAmount += (oDetail.cargoFijoPromocion * 1);
-                }
+						decRegularAmount += (oDetail.FixedCharge * 1);// decRegularAmount += (oGroup.FixedCharge * 1);
+						decPromotionAmount += (oDetail.cargoFijoPromocion * 1);
+					}
 
-                intEquipmentTot++;
-            });
+					intEquipmentTot++;
+				}
+			});
 
             that.AdditionalDecos.oRequest.TotEquipment = intEquipmentTot;
             that.AdditionalDecos.oRequest.intQuantity = intEquipmentTot;
@@ -1706,7 +1711,7 @@
                         },
                         {
                             "parametro": "Notas",
-                            "valor": $.string.isEmptyOrNull(controls.txtNote.val()) ? '-' : controls.txtNote.val().replace(/\n/g, "\\n")
+                            "valor": $.string.isEmptyOrNull(controls.txtNote.val()) ? '-' : controls.txtNote.val().replace(/\t/g, " ").replace(/\n/g, "\\n")
                         },
                         {
                             "parametro": "flagCaso",
@@ -2221,7 +2226,7 @@
                 feed += "<POP2>{21}</POP2>";
                 var XMLDetailService = string.format(feed,
                     select.idServicio,
-                    (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT !== 'TOBE' ? select.idGrupoPrincipal : select.idGrupo), //select.idGrupoPrincipal,//Enviar el idGrupo: Cambio solicitado por SGA 
+                    (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT !== 'TOBE' ? select.idGrupoPrincipal : select.idGrupo),//Enviar el idGrupo: Cambio solicitado por SGA 
                     select.idGrupo,
                     select.cantidad == null ? 1 : select.cantidad, //CANTIDAD_INSTANCIA
                     select.ServiceDescription,
