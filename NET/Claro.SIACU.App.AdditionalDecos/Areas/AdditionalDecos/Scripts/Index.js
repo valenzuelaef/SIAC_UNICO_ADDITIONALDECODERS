@@ -123,7 +123,7 @@
         additionalDecosInit: function () {
             var that = this, controls = that.getControls();
             that.timer();
-
+			debugger;
             var plataformaAT = !$.string.isEmptyOrNull(Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT) ? Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT : '';
             var idTransactionFront = $.app.getTypeClientAsIsOrToBe(plataformaAT, '2', '10');
             var customerInformationPromise = $.reusableViews.viewOfTheLeftSide(controls.divCustomerDataView);
@@ -520,7 +520,7 @@
             var lstServicesCoreClient = that.AdditionalDecos.Data.CoreServices;
             debugger;
             lstServicesCoreClient.forEach(function (Item) {
-                var objService = lstAddServices.filter(function (x) { return x.LineID == Item.idServPvu; })[0];
+                var objService = lstAddServices.filter(function (x) { return x.LineID == Item.idServPvu  || x.LineID == Item.idServPvuTobe; })[0];
                 if (objService != null || objService != undefined) {
                     that.AdditionalDecos.oRequest.arrCoreServices.push({
                         LineID: objService.LineID,
@@ -827,7 +827,7 @@
 
             } else {
                 $.each(arrEquipmentClient, function (Index, Item) {
-                    arrEquipmentPlan = arrEquipmentPlan.filter(function (x) { return x.LineID != Item.idServPvu; });
+                    arrEquipmentPlan = arrEquipmentPlan.filter(function (x) { return x.LineID != Item.idServPvu  && x.LineID != Item.idServPvuTobe; });
                 });
                 $.each(that.AdditionalDecos.oRequest.arrAddEquipment, function (Index, Item) {
                     arrEquipmentPlan = arrEquipmentPlan.filter(function (x) { return x.LineID != Item.idServicio; });
@@ -921,7 +921,7 @@
             var decPromotionAmount = that.AdditionalDecos.oRequest.decPromotionAmount * 1;
 
             $.each(arrEquipmentClient, function (Index, Item) {
-                var oItemClient = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu; })[0];
+                var oItemClient = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu  || x.LineID == Item.idServPvuTobe; })[0];
                 arrEquipment.push(oItemClient);
             });
 
@@ -1135,19 +1135,25 @@
                 if (a.idServPvu < b.idServPvu) { return -1; }
                 return 0;
             });
-
+			/*inicio - solo para log quitar*/
+			console.log('Lista de Equipos Disponibles del plan: ');
+			$.each(arrEquipmentPlan, function (Index, Item) {
+				console.log('- Item.ServiceDescription --> ' +Item.ServiceDescription +' - '+ '- Item.LineID -->'+ Item.LineID );
+				});
+			/*fin - solo para log quitar*/
             console.log('plataformaAT: ' + Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT);
             $.each(arrEquipmentClient, function (Index, Item) {
-                console.log('Item.idServPvu --> ' + Item.idServPvu + ' - o - ' + 'Item.idServPvuTobe --> ' + Item.idServPvuTobe);
-				if (!($.array.isEmptyOrNull(Item.idServPvu) && $.array.isEmptyOrNull(Item.idServPvuTobe))) {
+                if (!($.array.isEmptyOrNull(Item.idServPvu) && $.array.isEmptyOrNull(Item.idServPvuTobe))) {
+					console.log('Equipo cliente: Item.ServiceDescription  --> ' +Item.ServiceDescription +' -> '+  'Item.idServPvu --> ' + Item.idServPvu + ' - o - ' + 'Item.idServPvuTobe --> ' + Item.idServPvuTobe);			
 					 if (Session.SessionParams.DATACUSTOMER.objPostDataAccount.plataformaAT == 'TOBE')
                         var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu || x.LineID == Item.idServPvuTobe; })[0];
                     else
                         var oEquipment = arrEquipmentPlan.filter(function (x) { return x.LineID == Item.idServPvu })[0];
-					debugger;
 					var oGroup = arrEquipmentGroup.filter(function (x) { return x.tipoEquipo == oEquipment.tipoEquipo })[0];
+					debugger;
 
 					if (oEquipment != null) {
+						
 						var strID = oGroup.idEquipo;
 						var strSpanID = 'SP_' + strID;
 
